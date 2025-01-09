@@ -116,7 +116,7 @@ function M.show_diff_by_branch()
 		0,
 		"i",
 		"<CR>",
-		"<cmd>stopinsert | lua require('plugins.gitbox').show_diff_by_branch_internal("
+		"<cmd>stopinsert | lua require('plugins.git_diff').show_diff_by_branch_internal("
 			.. bufid
 			.. ", "
 			.. winid
