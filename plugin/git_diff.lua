@@ -68,9 +68,10 @@ function M.show_git_file_diff()
 	run_cmd_and_show_result(command)
 end
 
-function M.show_diff_by_branch_internal(bufid, winid)
+local function show_diff_by_branch_internal(bufid, winid)
 	local branch = vim.api.nvim_buf_get_text(bufid, 0, 0, 0, -1, {})
 	vim.api.nvim_win_close(winid, true)
+  vim.api.nvim_buf_delete(bufid, { force = true })
 	local repo_root = get_git_project_path()
 	if repo_root == "" then
 		vim.api.nvim_echo({ { "Not in a Git repository", "WarningMsg" } }, true, {})
@@ -112,41 +113,21 @@ function M.show_diff_by_branch()
 	local map_opts = { noremap = true, silent = true }
 	vim.api.nvim_buf_set_keymap(0, "i", "<Esc>", "<cmd>stopinsert | q!<CR>", map_opts)
 	vim.api.nvim_buf_set_keymap(0, "n", "<Esc>", "<cmd>stopinsert | q!<CR>", map_opts)
-	vim.api.nvim_buf_set_keymap(
-		0,
-		"i",
-		"<CR>",
-		"<cmd>stopinsert | lua require('plugins.git_diff').show_diff_by_branch_internal("
-			.. bufid
-			.. ", "
-			.. winid
-			.. ")<CR>",
-		map_opts
-	)
+	vim.keymap.set("i", "<CR>", function()
+		show_diff_by_branch_internal(bufid, winid)
+	end, { silent = true, buffer = bufid })
 end
 
-vim.api.nvim_create_user_command(
-  "GitDiffFileHistory",
-  M.show_git_file_history,
-  {
-    nargs = 0,
-    desc = "Show git log for current file",
-  }
-)
-vim.api.nvim_create_user_command(
-  "GitDiffFileChanges",
-  M.show_git_file_diff,
-  {
-    nargs = 0,
-    desc = "Show git diff for current file",
-  }
-)
-vim.api.nvim_create_user_command(
-  "GitDiffFileByBranch",
-  M.show_diff_by_branch,
-  {
-    nargs = 0,
-    desc = "Show git diff for current file with another branch",
-  }
-)
+vim.api.nvim_create_user_command("GitDiffFileHistory", M.show_git_file_history, {
+	nargs = 0,
+	desc = "Show git log for current file",
+})
+vim.api.nvim_create_user_command("GitDiffFileChanges", M.show_git_file_diff, {
+	nargs = 0,
+	desc = "Show git diff for current file",
+})
+vim.api.nvim_create_user_command("GitDiffFileByBranch", M.show_diff_by_branch, {
+	nargs = 0,
+	desc = "Show git diff for current file with another branch",
+})
 return M
